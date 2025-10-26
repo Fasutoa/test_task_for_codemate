@@ -28,7 +28,6 @@ class BalanceService
                 $user->save();
             }
 
-            // Получаем или создаём баланс
             $balance = Balance::firstOrCreate(
                 ['user_id' => $user->id],
                 ['balance' => 0.00]
@@ -37,7 +36,6 @@ class BalanceService
             $balance->balance += $data['amount'];
             $balance->save();
 
-            // Создаём транзакцию пополнения
             Transaction::create([
                 'user_id' => $user->id,
                 'type' => 'deposit',
@@ -91,7 +89,6 @@ class BalanceService
             $fromBalance = Balance::where('user_id', $data['from_user_id'])->first();
             $toUser = User::find($data['to_user_id']);
 
-            // Автосоздание получателя, если не существует
             if (!$toUser) {
                 $toUser = new User;
                 $toUser->id = $data['to_user_id'];
@@ -117,15 +114,12 @@ class BalanceService
                 throw new \Exception('Insufficient funds', 409);
             }
 
-            // Списываем средства у отправителя
             $fromBalance->balance -= $data['amount'];
             $fromBalance->save();
 
-            // Добавляем средства получателю
             $toBalance->balance += $data['amount'];
             $toBalance->save();
 
-            // Транзакция для отправителя
             Transaction::create([
                 'user_id' => $data['from_user_id'],
                 'type' => 'transfer_out',
@@ -134,7 +128,6 @@ class BalanceService
                 'related_user_id' => $toUser->id,
             ]);
 
-            // Транзакция для получателя
             Transaction::create([
                 'user_id' => $toUser->id,
                 'type' => 'transfer_in',
