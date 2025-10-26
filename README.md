@@ -10,6 +10,12 @@ docker-compose up -d
 # Установить зависимости Laravel
 docker-compose exec app composer install
 
+# Скопировать .env файл
+cp .env.example .env
+
+# Создать ключ приложения
+docker-compose exec app php artisan key:generate
+
 # Запустить миграции
 docker-compose exec app php artisan migrate
 
@@ -102,4 +108,14 @@ docker-compose exec app php artisan test
 
 # Запуск с покрытием
 docker-compose exec app vendor/bin/phpunit --coverage-html coverage
+```
+
+## В случае ошибок с БД
+
+Выполнить 
+
+```bash
+docker-compose exec app apt-get update && apt-get install -y postgresql-client
+
+docker-compose exec app php artisan migrate
 ```
